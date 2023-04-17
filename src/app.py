@@ -19,7 +19,7 @@ from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import pandas as pd
 
-app = Dash(__name__, title="myapp")
+app = Dash(__name__, title="myapp",external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Declare server for Heroku deployment. Needed for Procfile.
 server = app.server
@@ -32,7 +32,6 @@ def load_data(data_file: str) -> pd.DataFrame:
     PATH = pathlib.Path(__file__).parent
     DATA_PATH = PATH.joinpath("data").resolve()
     return pd.read_csv(DATA_PATH.joinpath(data_file))
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 # Suppress callback exceptions
 app.config.suppress_callback_exceptions = True
 
@@ -48,12 +47,13 @@ app.layout = html.Div([
     html.Div(id='page-content')
 ])
 
+##
 page_1_layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             dcc.Upload(
                 id='upload-data',
-                children=html.Div(['Drag and Drop or ', html.A('Select an Excel File')]),
+                children=html.Div(['Drag and Drop or ', html.A('Select an CSV File')]),
                 style={
                     'width': '100%',
                     'height': '60px',
@@ -64,7 +64,7 @@ page_1_layout = dbc.Container([
                     'textAlign': 'center',
                     'margin': '10px'
                 },
-                accept='.xlsx'
+                accept='.csv'
             )
         ])
     ]),
@@ -85,7 +85,8 @@ page_1_layout = dbc.Container([
         dbc.Col([
             dcc.Graph(id='line-plot'),
             dcc.Graph(id='bar-plot'),
-            dcc.Graph(id='scatter-plot')
+            dcc.Graph(id='scatter-plot'),
+            dcc.Graph(id='efficiency-plot')
         ])
     ])
 ])
@@ -99,7 +100,7 @@ page_2_layout = html.Div([])
 
 
 def load_default_data():
-    df = load_data("data.csv")
+    df = load_data('data.csv')
     # Convert "Date" column to datetime format
     df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
 
@@ -114,8 +115,8 @@ def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
     try:
-        if 'xlsx' in filename:
-            df = pd.read_excel(io.BytesIO(decoded), engine='openpyxl')
+        if 'csv' in filename:
+            df = pd.read_csv(io.BytesIO(decoded), engine='openpyxl')
             # Convert "Date" column to datetime format
             df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
 
@@ -145,6 +146,7 @@ def display_page(pathname):
     Output('line-plot', 'figure'),
     Output('bar-plot', 'figure'),
     Output('scatter-plot', 'figure'),
+    Output('efficiency-plot', 'figure'),  # Add this line
     Input('upload-data', 'contents'),
     Input('upload-data', 'filename'),
     Input('date-picker-range', 'start_date'),
@@ -188,7 +190,25 @@ def update_output(contents, filename, start_date, end_date):
     scatter_plot3.update_xaxes(title_text='Date')
     scatter_plot3.update_yaxes(title_text='TON')
 
-    return scatter_plot1, scatter_plot2, scatter_plot3
+    df['EWT'] = df['41CS.RF.BLRS:TS DEG F']
+    df['LWT'] = df['41CS.RF.BLRS:TR DEG F']
+    df['WBT'] = df['41CS.RF.BLRS:OAT DEG F']
+    df['Range'] = df['EWT'] - df['LWT']
+    df['Approach'] = df['LWT'] - df['WBT']
+    df['Effectiveness'] = (df['Range'] * 100) / (df['EWT'] - df['WBT'])
+
+    threshold = 5  # Replace this with the appropriate value
+    df['Meets_Standard'] = df['Effectiveness'] >= threshold
+    efficiency_plot = px.scatter(df, x='DateTime', y='Effectiveness', title='Cooling Tower Efficiency',
+                                 color='Meets_Standard', color_discrete_sequence=['red', 'green'],
+                                 labels={'Meets_Standard': 'ASHRAE Standard'})
+    efficiency_plot.update_xaxes(title_text='Date')
+    efficiency_plot.update_yaxes(title_text='Efficiency')
+
+    return scatter_plot1, scatter_plot2, scatter_plot3, efficiency_plot
+
 
 if __name__ == '__main__':
     app.run_server(debug=True, use_reloader=False)
+
+
