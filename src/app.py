@@ -102,7 +102,7 @@ page_2_layout = html.Div([])
 def load_default_data():
     df = load_data('data.csv')
     # Convert "Date" column to datetime format
-    df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
+    df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
 
     # Convert "Time" column to datetime format
     df["Time"] = pd.to_datetime(df["Time"], format="%H:%M:%S").dt.time
@@ -118,7 +118,7 @@ def parse_contents(contents, filename):
         if 'csv' in filename:
             df = pd.read_csv(io.BytesIO(decoded), engine='openpyxl')
             # Convert "Date" column to datetime format
-            df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
+            df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
 
             # Convert "Time" column to datetime format
             df["Time"] = pd.to_datetime(df["Time"], format="%H:%M:%S").dt.time
