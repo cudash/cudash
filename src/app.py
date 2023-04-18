@@ -399,7 +399,7 @@ def parse_contents(contents, filename):
     decoded = base64.b64decode(content_string)
     try:
         if 'xlsx' in filename:
-            df = pd.read_csv(io.BytesIO(decoded), engine='openpyxl')
+            df = pd.read_csv(io.BytesIO(decoded), engine='c')
             # Convert "Date" column to datetime format
             df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
 
