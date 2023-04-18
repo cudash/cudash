@@ -150,7 +150,7 @@ page_1_layout = dbc.Container([
 
 
 page_2_layout = dbc.Container([
-    html.H3("Page 1", style={"textAlign": "center"}),
+    html.H3("Page 2", style={"textAlign": "center"}),
     dbc.Row([
         dbc.Col([
             dcc.Upload(
@@ -208,7 +208,7 @@ page_2_layout = dbc.Container([
 ])
 
 page_3_layout = dbc.Container([
-    html.H3("Page 1", style={"textAlign": "center"}),
+    html.H3("Page 3", style={"textAlign": "center"}),
     dbc.Row([
         dbc.Col([
             dcc.Upload(
@@ -266,7 +266,7 @@ page_3_layout = dbc.Container([
 ])
 
 page_4_layout = dbc.Container([
-    html.H3("Page 1", style={"textAlign": "center"}),
+    html.H3("Page 4", style={"textAlign": "center"}),
     dbc.Row([
         dbc.Col([
             dcc.Upload(
@@ -324,7 +324,7 @@ page_4_layout = dbc.Container([
 ])
 
 page_5_layout = dbc.Container([
-    html.H3("Page 1", style={"textAlign": "center"}),
+    html.H3("Page 5", style={"textAlign": "center"}),
     dbc.Row([
         dbc.Col([
             dcc.Upload(
@@ -439,6 +439,37 @@ def update_weather_plot(start_date, end_date):
 
         response = requests.get(url)
         data = response.json()
+        response = requests.get(url)
+        data = response.json()
+
+        temp = round(data["main"]["temp"] - 273.15, 2)
+        humidity = data["main"]["humidity"]
+        wind_speed = data["wind"]["speed"]
+        weather_description = data["weather"][0]["description"]
+
+        # Create a dictionary to map weather description values to numeric values
+        weather_dict = {"clear sky": 1, "few clouds": 2, "scattered clouds": 3, "broken clouds": 4,
+                        "overcast clouds": 5, "light rain": 6, "moderate rain": 7, "heavy intensity rain": 8}
+
+        # Map the weather description value to a corresponding numeric value
+        if weather_description in weather_dict:
+            weather_description_value = weather_dict[weather_description]
+        else:
+            weather_description_value = 0
+
+        # Create figure with subplots
+        fig = make_subplots(rows=2, cols=2, subplot_titles=("Temperature", "Humidity", "Wind Speed", "Weather Description"),    
+                            specs=[[{"type": "domain"}, {"type": "domain"}],
+                                [{"type": "domain"}, {"type": "domain"}]],)
+
+        # Add traces for each subplot
+        fig.add_trace(go.Indicator(mode="number", value=temp, title="Temperature (°C)"), row=1, col=1)
+        fig.add_trace(go.Indicator(mode="number", value=humidity, title="Humidity (%)"), row=1, col=2)
+        fig.add_trace(go.Indicator(mode="number", value=wind_speed, title="Wind Speed (m/s)"), row=2, col=1)
+        fig.add_trace(go.Indicator(mode="number", value=weather_description_value, title="Weather Description"), row=2, col=2)
+
+        fig.update_layout(height=600, title_text="Real-time Weather Data for New York")
+
 
         temp = round(data["main"]["temp"] - 273.15, 2)
         humidity = data["main"]["humidity"]
@@ -446,13 +477,15 @@ def update_weather_plot(start_date, end_date):
         weather_description = data["weather"][0]["description"]
 
         # Create figure with subplots
-        fig = make_subplots(rows=2, cols=2, subplot_titles=("Temperature", "Humidity", "Wind Speed", "Weather Description"))
+        fig = make_subplots(rows=2, cols=2, subplot_titles=("Temperature", "Humidity", "Wind Speed", "Weather Description"),    
+                            specs=[[{"type": "domain"}, {"type": "domain"}],
+                                   [{"type": "domain"}, {"type": "domain"}]],)
 
         # Add traces for each subplot
         fig.add_trace(go.Indicator(mode="number", value=temp, title="Temperature (°C)"), row=1, col=1)
         fig.add_trace(go.Indicator(mode="number", value=humidity, title="Humidity (%)"), row=1, col=2)
         fig.add_trace(go.Indicator(mode="number", value=wind_speed, title="Wind Speed (m/s)"), row=2, col=1)
-        fig.add_trace(go.Indicator(mode="number", value=weather_description, title="Weather Description"), row=2, col=2)
+        fig.add_trace(go.Indicator(mode="number", value=weather_description_value, title="Weather Description"), row=2, col=2)
 
         fig.update_layout(height=600, title_text="Real-time Weather Data for New York")
     else:
