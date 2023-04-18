@@ -561,7 +561,7 @@ def update_output(contents, filename, start_date, end_date):
     Output('line-plot-2', 'figure'),
     Output('bar-plot-2', 'figure'),
     Output('scatter-plot-2', 'figure'),
-    Output('efficiency-plot', 'figure'),
+    Output('weather-plot-2', 'figure'),
     Input('upload-data-2', 'contents'),
     Input('upload-data-2', 'filename'),
     Input('date-picker-range-2', 'start_date'),
@@ -607,22 +607,11 @@ def update_output_2(contents, filename, start_date, end_date):
 
 
 
-    df['EWT'] = df['41CS.RF.BLRS:TS DEG F']
-    df['LWT'] = df['41CS.RF.BLRS:TR DEG F']
-    df['WBT'] = df['41CS.RF.BLRS:OAT DEG F']
-    df['Range'] = df['EWT'] - df['LWT']
-    df['Approach'] = df['LWT'] - df['WBT']
-    df['Effectiveness'] = (df['Range'] * 100) / (df['EWT'] - df['WBT'])
+    weather_plot = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.TONS TONS', title='Scatter Plot')
+    weather_plot.update_xaxes(title_text='Date')
+    weather_plot.update_yaxes(title_text='TON')
 
-    threshold = 5  # Replace this with the appropriate value
-    df['Meets_Standard'] = df['Effectiveness'] >= threshold
-    efficiency_plot = px.scatter(df, x='DateTime', y='Effectiveness', title='Cooling Tower Efficiency',
-                                 color='Meets_Standard', color_discrete_sequence=['red', 'green'],
-                                 labels={'Meets_Standard': 'ASHRAE Standard'})
-    efficiency_plot.update_xaxes(title_text='Date')
-    efficiency_plot.update_yaxes(title_text='Efficiency')
-
-    return scatter_plot1, scatter_plot2, scatter_plot3, efficiency_plot
+    return scatter_plot1, scatter_plot2, scatter_plot3, weather_plot
 
 @app.callback(
     Output('line-plot-3', 'figure'),
