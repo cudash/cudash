@@ -50,7 +50,6 @@ def parse_weather_data(data):
 
 # Sidebar content and style
 SIDEBAR_STYLE = {
-    "position": "fixed",
     "top": 0,
     "right": 0,
     "bottom": 0,
@@ -91,9 +90,9 @@ app.layout = html.Div(
             [
                 html.Div(id="page-content", style={"padding": "2rem 1rem"})
             ],
-            style={"margin-right": "0rem"},
+            style={"margin-right": "0rem", "flex-grow":"2"},
         ),
-    ]
+    ], style={"display":"flex"}
 )
 
 page_1_layout = dbc.Container([
