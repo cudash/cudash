@@ -113,7 +113,7 @@ page_1_layout = dbc.Container([
                     'textAlign': 'center',
                     'margin': '10px'
                 },
-                accept='.xlsx'
+                accept='.csv'
             )
         ])
     ]),
@@ -167,7 +167,7 @@ page_2_layout = dbc.Container([
                     'textAlign': 'center',
                     'margin': '10px'
                 },
-                accept='.xlsx'
+                accept='.csv'
             )
         ])
     ]),
@@ -225,7 +225,7 @@ page_3_layout = dbc.Container([
                     'textAlign': 'center',
                     'margin': '10px'
                 },
-                accept='.xlsx'
+                accept='.csv'
             )
         ])
     ]),
@@ -283,7 +283,7 @@ page_4_layout = dbc.Container([
                     'textAlign': 'center',
                     'margin': '10px'
                },
-                accept='.xlsx'
+                accept='.csv'
             )
         ])
     ]),
