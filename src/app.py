@@ -22,6 +22,9 @@ import plotly.express as px
 import numpy as np
 import pathlib
 
+
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
 #For spaces classified as occupancy groups E and I-4: multiply the building emissions intensity limit of (2024) 0.01074 tCO2e/sf (2030) 0.0042 tCO2e/sf by the corresponding gross floor area (sf);
 def load_data(data_file: str) -> pd.DataFrame:
     '''
@@ -31,9 +34,14 @@ def load_data(data_file: str) -> pd.DataFrame:
     DATA_PATH = PATH.joinpath("data").resolve()
     return pd.read_excel(DATA_PATH.joinpath(data_file), engine='openpyxl')
 
-#default_file_path = '/Users/jonathanlerner/Downloads/41CSDATA.xlsx'
-#default_file_path2 = '/Users/jonathanlerner/Downloads/CarbonTracking.xlsx'
-#default_file_path3 = '/Users/jonathanlerner/Downloads/CWST.xlsx'
+def load_datac(data_file: str) -> pd.DataFrame:
+    '''
+    Load data from /data directory
+    '''
+    PATH = pathlib.Path(__file__).parent
+    DATA_PATH = PATH.joinpath("data").resolve()
+    return pd.read_csv(DATA_PATH.joinpath(data_file))
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Suppress callback exceptions
@@ -50,6 +58,18 @@ def parse_weather_data(data):
     humidity = data['main']['humidity']
     return temperature, humidity
 
+def load_default_data():
+    df = load_data('41CSDATA.xlsx')
+    # Convert "Date" column to datetime format
+    df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
+
+    # Convert "Time" column to datetime format
+    df["Time"] = pd.to_datetime(df["Time"], format="%H:%M:%S").dt.time
+
+    # Combine the "Date" and "Time" columns into a new "DateTime" column
+    df["DateTime"] = pd.to_datetime(df["Date"].dt.strftime("%Y-%m-%d") + " " + df["Time"].astype(str))
+    df['color'] = df['41CS.CH.PLANT.KW/TON KW/TON'].apply(lambda y: 'green' if y < 0.65 else ('blue' if y < 0.72 else 'red'))
+    return df
 
 def load_default_data2():
     df = load_data('CarbonTrackingFile.xlsx')
@@ -63,6 +83,23 @@ df2 = df2.dropna(subset=['equipment room', 'equipment type'])
 def load_default_data3():
     df = load_data('CWST.xlsx')
     return df
+
+def load_default_datac4():
+    df = load_datac('cudash.csv')
+    return df
+# Suppress callback exceptions
+
+app.config.suppress_callback_exceptions = True
+def get_weather_data(start_date, end_date):
+    url = f'https://api.openweathermap.org/data/2.5/weather?q=New+York&appid=YOUR_API_KEY&start={start_date}&end={end_date}'
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+def parse_weather_data(data):
+    temperature = data['main']['temp']
+    humidity = data['main']['humidity']
+    return temperature, humidity
 
 SIDEBAR_STYLE = {
     "top": 0,
@@ -165,7 +202,7 @@ page_1_layout = dbc.Container([
 
 
 page_2_layout = dbc.Container([
-    html.H3("Air Handler", style={"textAlign": "center"}),
+    html.H3("Air Handling Units", style={"textAlign": "center"}),
     dbc.Row([
         dbc.Col([
             dcc.Upload(
@@ -185,7 +222,7 @@ page_2_layout = dbc.Container([
             )
         ])
     ]),
-    dbc.Row(
+    dbc.Row([
         dbc.Col([
             dcc.DatePickerRange(
                 id='date-picker-range-2',
@@ -197,59 +234,135 @@ page_2_layout = dbc.Container([
                 initial_visible_month=datetime.datetime.now()
             )
         ]),
-    ),
-    dbc.Row([
-        dbc.Col([
-            html.Div(dcc.Graph(id='line-plot-2'),
-                     style={'border': '1px solid black', 'padding': '10px', 'marginRight': '5px',
-                            'marginBottom': '10px'})
-        ], width=6),
-        dbc.Col([
-            html.Div(dcc.Graph(id='bar-plot-2'),
-                     style={'border': '1px solid black', 'padding': '10px', 'marginLeft': '5px',
-                            'marginBottom': '10px'})
-        ], width=6),
     ]),
     dbc.Row([
         dbc.Col([
-            html.Div(dcc.Graph(id='scatter-plot-2'),
-                     style={'border': '1px solid black', 'padding': '10px', 'marginRight': '5px'})
-        ], width=6),
+            html.Div(dcc.Graph(id='ah01-sup-flow-plot'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
         dbc.Col([
-            html.Div(dcc.Graph(id='weather-plot-2'),
-                     style={'border': '1px solid black', 'padding': '10px', 'marginLeft': '5px'})
-        ], width=6),
+            html.Div(dcc.Graph(id='ah02-sup-flow-plot'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div(dcc.Graph(id='ah03-sup-flow-plot'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div(dcc.Graph(id='ah04-sup-flow-plot'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div(dcc.Graph(id='ah05-sup-flow-plot'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div(dcc.Graph(id='ah06-sup-flow-plot'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
     ])
 ])
 
-page_3_layout = dbc.Container([
-    html.H3("Page 3", style={"textAlign": "center"}),
+page_3_layout = html.Div([
+    html.H1("Optimizing Chiller Plant"),
     dbc.Row([
         dbc.Col([
-            dbc.CardGroup([
-                dbc.Label("Chiller Load (tons)"),
-                dbc.Input(id="chiller_load_input", type="number", placeholder="Enter chiller load"),
-                dbc.Label("Wet Bulb (°F)"),
-                dbc.Input(id="wet_bulb_input", type="number", placeholder="Enter wet bulb temperature"),
-                dbc.Label("Current CWST Setpoint (°F)"),
-                dbc.Input(id="cwst_setpoint_input", type="number", placeholder="Enter current CWST setpoint"),
+            dbc.Card([
+                dbc.CardHeader("Inputs"),
+                dbc.CardBody([
+                    dbc.Label("Load (tons)"),
+                    dbc.Input(id='load_tons', type="number", min=0, step=0.1, placeholder="Enter load (tons)"),
+                    dbc.Label("Wet Bulb (°F)"),
+                    dbc.Input(id='wet_bulb', type="number", min=0, step=0.1, placeholder="Enter wet bulb (°F)"),
+                    dbc.Label("Current CWST"),
+                    dbc.Input(id='current_cwst', type="number", min=0, step=0.1, placeholder="Enter current CWST (°F)"),
+                    dbc.Label("Current Plant kW"),
+                    dbc.Input(id='current_plant_kw', type="number", min=0, step=0.1, placeholder="Enter current plant kW"),
+                    dbc.Button("Calculate", id="calculate_btn", color="primary", className="mt-2")
+                ]),
             ]),
-        ], width=6),
+        ], width=4),
         dbc.Col([
-            dbc.Label("Optimal CWST (°F):"),
-            html.Div(id="optimal_w_output"),
-            dbc.Label("Predicted Plant kW:"),
-            html.Div(id="predicted_kw_output"),
-            dbc.Label("Energy Savings (kW):"),
-            html.Div(id="energy_savings_output"),
-        ], width=6),
-    ], justify="center"),
+            dbc.Card([
+                dbc.CardHeader("Optimal CWST (°F)"),
+                dbc.CardBody([
+                    html.Div(id='optimal_cwst')
+                ]),
+            ]),
+            dbc.Card([
+                dbc.CardHeader("Energy Use Difference (kW):"),
+                dbc.CardBody([
+                    html.Div(id='energy_savings')
+                ]),
+            ]),
+        ], width=8),
+    ]),
     dbc.Row([
         dbc.Col([
-            dbc.Button("Calculate", id="submit_button", color="primary", n_clicks=0),
-        ], width=12, style={"textAlign": "center"}),
+            dcc.Upload(
+                id='upload-data-3',
+                children=html.Div(['Drag and Drop or ', html.A('Select an Excel File')]),
+                style={
+                    'width': '100%',
+                    'height': '60px',
+                    'lineHeight': '60px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                    'margin': '10px'
+                },
+                accept='.csv'
+            )
+        ]),
+        dbc.Col([
+            html.Div([
+                dbc.Label(""),
+                dcc.DatePickerRange(
+                    id='date_range_picker_3',
+                    start_date_placeholder_text="Start Date",
+                    end_date_placeholder_text="End Date",
+                    min_date_allowed=datetime.date(2020, 1, 1),
+                    max_date_allowed=datetime.date.today(),
+                    initial_visible_month=datetime.date.today(),
+                ),
+            ], style={
+                'width': '100%',
+                'height': '60px',
+                'lineHeight': '20px',
+                'borderWidth': '1px',
+                'borderStyle': 'dashed',
+                'borderRadius': '5px',
+                'textAlign': 'center',
+                'margin': '10px',
+                'padding': '5px'
+            }),
+        ]),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div(dcc.Graph(id='CoolingTower1'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div(dcc.Graph(id='CoolingTower2'),
+                     style={'border': '1px solid black', 'padding': '10px', 'marginBottom': '10px'})
+        ], width=12),
     ]),
 ])
+
 
 
 
@@ -358,10 +471,8 @@ page_5_layout = dbc.Container([
     # ]),
 ])
 
-
-
-def load_default_data():
-    df = load_data('41CSDATA.xlsx')
+def load_default_data4():
+    df = load_default_datac4()
     # Convert "Date" column to datetime format
     df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%y")
 
@@ -373,7 +484,8 @@ def load_default_data():
     df['color'] = df['41CS.CH.PLANT.KW/TON KW/TON'].apply(lambda y: 'green' if y < 0.65 else ('blue' if y < 0.72 else 'red'))
     return df
 
-
+def has_columns(df, required_columns):
+    return all(column in df.columns for column in required_columns)
 
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
@@ -455,22 +567,25 @@ def update_output(contents, filename, start_date, end_date):
         (1.0, 'red')
     ]
 
-    scatter_plot1 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.KW/TON KW/TON', title='KW/Ton',
-                               color='41CS.CH.PLANT.KW/TON KW/TON',
-                               color_continuous_scale=custom_color_scale,
-                               range_color=(0, 0.72))
-    scatter_plot1.update_xaxes(title_text='Date')
-    scatter_plot1.update_yaxes(title_text='KW/TON')
-    scatter_plot1.update_xaxes(title_text='Date')
-    scatter_plot1.update_yaxes(title_text='KW/TON')
+    scatter_plot1, scatter_plot2, scatter_plot3 = None, None, None
 
-    scatter_plot2= px.scatter(df, x='DateTime', y='41CS.CH.PLANT.KW KW', title='KW')
-    scatter_plot2.update_xaxes(title_text='Date')
-    scatter_plot2.update_yaxes(title_text='KW')
+    if has_columns(df, ['DateTime', '41CS.CH.PLANT.KW/TON KW/TON']):
+        scatter_plot1 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.KW/TON KW/TON', title='KW/Ton',
+                                   color='41CS.CH.PLANT.KW/TON KW/TON',
+                                   color_continuous_scale=custom_color_scale,
+                                   range_color=(0, 0.72))
+        scatter_plot1.update_xaxes(title_text='Date')
+        scatter_plot1.update_yaxes(title_text='KW/TON')
 
-    scatter_plot3 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.TONS TONS', title='Ton')
-    scatter_plot3.update_xaxes(title_text='Date')
-    scatter_plot3.update_yaxes(title_text='TON')
+    if has_columns(df, ['DateTime', '41CS.CH.PLANT.KW KW']):
+        scatter_plot2 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.KW KW', title='KW')
+        scatter_plot2.update_xaxes(title_text='Date')
+        scatter_plot2.update_yaxes(title_text='KW')
+
+    if has_columns(df, ['DateTime', '41CS.CH.PLANT.TONS TONS']):
+        scatter_plot3 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.TONS TONS', title='Ton')
+        scatter_plot3.update_xaxes(title_text='Date')
+        scatter_plot3.update_yaxes(title_text='TON')
 
     def update_weather_plot(start_date, end_date):
         if start_date is None or end_date is None:
@@ -483,7 +598,7 @@ def update_output(contents, filename, start_date, end_date):
             response = requests.get(url)
             data = response.json()
 
-            temp = round(data["main"]["temp"] - 273.15, 2)
+            temp = round(((data["main"]["temp"] - 273.15)*1.8)+32, 2)
             humidity = data["main"]["humidity"]
             wind_speed = data["wind"]["speed"]
             weather_description = data["weather"][0]["description"]
@@ -525,7 +640,7 @@ def update_output(contents, filename, start_date, end_date):
                                        [{"type": "domain"}, {"type": "domain"}]], )
 
             # Add traces for each subplot
-            fig.add_trace(go.Indicator(mode="number", value=temp, title="Temperature (°C)"), row=1, col=1)
+            fig.add_trace(go.Indicator(mode="number", value=temp, title="Temperature (°F)"), row=1, col=1)
             fig.add_trace(go.Indicator(mode="number", value=humidity, title="Humidity (%)"), row=1, col=2)
             fig.add_trace(go.Indicator(mode="number", value=wind_speed, title="Wind Speed (m/s)"), row=2, col=1)
             fig.add_trace(go.Indicator(mode="number", value=weather_description_value, title="Weather Description"),
@@ -533,16 +648,18 @@ def update_output(contents, filename, start_date, end_date):
 
             fig.update_layout(height=600, title_text="Real-time Weather Data for New York")
 
-        return fig
+            return fig
 
     weather_plot = update_weather_plot(None, None)
     return scatter_plot1, scatter_plot2, scatter_plot3, weather_plot
 
 @app.callback(
-    Output('line-plot-2', 'figure'),
-    Output('bar-plot-2', 'figure'),
-    Output('scatter-plot-2', 'figure'),
-    Output('weather-plot-2', 'figure'),
+    Output('ah01-sup-flow-plot', 'figure'),
+    Output('ah02-sup-flow-plot', 'figure'),
+    Output('ah03-sup-flow-plot', 'figure'),
+    Output('ah04-sup-flow-plot', 'figure'),
+    Output('ah05-sup-flow-plot', 'figure'),
+    Output('ah06-sup-flow-plot', 'figure'),
     Input('upload-data-2', 'contents'),
     Input('upload-data-2', 'filename'),
     Input('date-picker-range-2', 'start_date'),
@@ -550,61 +667,52 @@ def update_output(contents, filename, start_date, end_date):
 )
 def update_output_2(contents, filename, start_date, end_date):
     if contents is None:
-        df = load_default_data()
+        df = load_default_data4()
     else:
         df = parse_contents(contents, filename)
         if df is None:
-            df = load_default_data()
+            df = load_default_data4()
 
-    if start_date is not None and end_date is not None:
-        start_date = pd.to_datetime(start_date)
-        end_date = pd.to_datetime(end_date)
-        df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+    if start_date is None or end_date is None:
+        end_date = df['Date'].max()
+        start_date = end_date - pd.DateOffset(months=1)
 
+    df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
 
-    custom_color_scale = [
-        (0.0, 'green'),
-        (0.64 / 0.72, 'green'),
-        (0.64 / 0.72, 'blue'),
-        (0.71 / 0.72, 'blue'),
-        (0.71 / 0.72, 'red'),
-        (1.0, 'red')
-    ]
+    import plotly.express as px
 
-    scatter_plot1 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.KW/TON KW/TON', title='Line Plot',
-                               color='41CS.CH.PLANT.KW/TON KW/TON',
-                               color_continuous_scale=custom_color_scale,
-                               range_color=(0, 0.72))
-    scatter_plot1.update_xaxes(title_text='Date')
-    scatter_plot1.update_yaxes(title_text='KW/TON')
-    scatter_plot1.update_xaxes(title_text='Date')
-    scatter_plot1.update_yaxes(title_text='KW/TON')
-    scatter_plot2= px.scatter(df, x='DateTime', y='41CS.CH.PLANT.KW KW', title='Bar Plot')
-    scatter_plot2.update_xaxes(title_text='Date')
-    scatter_plot2.update_yaxes(title_text='KW')
-    scatter_plot3 = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.TONS TONS', title='Scatter Plot')
-    scatter_plot3.update_xaxes(title_text='Date')
-    scatter_plot3.update_yaxes(title_text='TON')
+    def create_plot(column_name, title):
+        if column_name in df.columns:
+            plot = px.scatter(df, x='DateTime', y=column_name, title=title)
+            plot.update_xaxes(title_text='Date')
+            plot.update_yaxes(title_text= "Airflow (CFM)")
+        else:
+            plot = None
+        return plot
 
+    ah01_sup_flow_plot = create_plot('41CS.LL2.AH01.SUP.FLOW CFM', 'AH01 SUPPLY FLOW')
+    ah02_sup_flow_plot = create_plot('41CS.LL2.AH02.SUP.FLOW CFM', 'AH02 SUPPLY FLOW')
+    ah03_sup_flow_plot = create_plot('41CS.LL2.AH03.SUP.FLOW CFM', 'AH03 SUPPLY FLOW')
+    ah04_sup_flow_plot = create_plot('41CS.RF.AH04.SUP.FLOW CFM', 'AH04 SUPPLY FLOW')
+    ah05_sup_flow_plot = create_plot('41CS.RF.AH05.SUP.FLOW CFM', 'AH05 SUPPLY FLOW')
+    ah06_sup_flow_plot = create_plot('41CS.RF.AH06.SUP.FLOW CFM', 'AH06 SUPPLY FLOW')
 
+    return (ah01_sup_flow_plot, ah02_sup_flow_plot, ah03_sup_flow_plot,
+            ah04_sup_flow_plot, ah05_sup_flow_plot, ah06_sup_flow_plot)
 
-    weather_plot = px.scatter(df, x='DateTime', y='41CS.CH.PLANT.TONS TONS', title='Scatter Plot')
-    weather_plot.update_xaxes(title_text='Date')
-    weather_plot.update_yaxes(title_text='TON')
-
-    return scatter_plot1, scatter_plot2, scatter_plot3, weather_plot
 
 @app.callback(
-    Output("optimal_w_output", "children"),
-    Output("predicted_kw_output", "children"),
-    Output("energy_savings_output", "children"),
-    Input("submit_button", "n_clicks"),
-    State("chiller_load_input", "value"),
-    State("wet_bulb_input", "value"),
-    State("cwst_setpoint_input", "value"),
+    [Output("optimal_cwst", "children"),
+     Output("energy_savings", "children")],
+    [Input("calculate_btn", "n_clicks")],
+    [State("load_tons", "value"),
+     State("wet_bulb", "value"),
+     State("current_cwst", "value"),
+     State("current_plant_kw", "value"),
+     ]
 )
-def calculate_optimal_w_and_savings(n_clicks, chiller_load, wet_bulb, cwst_setpoint):
-    if n_clicks is None or chiller_load is None or wet_bulb is None or cwst_setpoint is None:
+def calculate_optimal_cwst_and_savings(n_clicks, chiller_load, wet_bulb, cwst_setpoint, current_plant_kw):
+    if n_clicks is None or chiller_load is None or wet_bulb is None or cwst_setpoint is None or current_plant_kw is None:
         raise PreventUpdate
 
     data = load_default_data3()
@@ -625,14 +733,62 @@ def calculate_optimal_w_and_savings(n_clicks, chiller_load, wet_bulb, cwst_setpo
 
     # Calculate the optimal w
     optimal_w = (0.0256 * chiller_load) + (0.7693 * wet_bulb) + 20.23
+    optimal_w = round(optimal_w)
+
+    # Limit optimal_w between 68 and 78
+    if optimal_w < 68:
+        optimal_w = 68
+    elif optimal_w > 78:
+        optimal_w = 78
 
     # Predict the new plant kW
     predicted_kw = lmPoly.predict(poly.fit_transform(np.array([[chiller_load, wet_bulb, optimal_w]])))[0][0]
 
     # Calculate energy savings
-    energy_savings = cwst_setpoint - predicted_kw
+    energy_savings = current_plant_kw - predicted_kw
+    energy_savings = round(energy_savings)
 
-    return optimal_w, predicted_kw, energy_savings
+    return optimal_w, energy_savings
+
+
+@app.callback(
+    Output('CoolingTower1', 'figure'),
+    Output('CoolingTower2', 'figure'),
+    Input('upload-data-3', 'contents'),
+    Input('upload-data-3', 'filename'),
+    Input('date_range_picker_3', 'start_date'),
+    Input('date_range_picker_3', 'end_date')
+)
+def update_output_3(contents, filename, start_date, end_date):
+    if contents is None:
+        df = load_default_data4()
+    else:
+        df = parse_contents(contents, filename)
+        if df is None:
+            df = load_default_data4()
+
+    if start_date is None or end_date is None:
+        end_date = df['Date'].max()
+        start_date = end_date - pd.DateOffset(months=1)
+
+    df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+
+    import plotly.express as px
+
+    def create_plot(column_name, title):
+        if column_name in df.columns:
+            plot = px.scatter(df, x='DateTime', y=column_name, title=title)
+            plot.update_xaxes(title_text='Date')
+            plot.update_yaxes(title_text= "Airflow (CFM)")
+        else:
+            plot = None
+        return plot
+
+    CoolingTower1 = create_plot('41CS.RF.CT01.KW KW', 'Cooling Tower 1 Energy Use (kW)')
+    CoolingTower2 = create_plot('41CS.RF.CT02.KW KW', 'Cooling Tower 2 Energy Use (kW)')
+
+
+    return (CoolingTower1, CoolingTower2)
 
 
 
@@ -845,40 +1001,32 @@ def update_output_5(contents, filename, start_date, end_date):
     )
 
     # Add lines for LL97 limits
-    ll97_limits.update({'Campus': 4200})  # Replace 1800 with the actual LL97 limit for the campus
+    ll97_limits.update({'Campus': 4435})  # Replace 1800 with the actual LL97 limit for the campus
 
-    annotations = []
-    for i, (building, limit) in enumerate(ll97_limits.items()):
-        co2_emissions_plot.add_shape(
-            type='line',
-            x0=yearly_energy_data['Year'].min(),
-            x1=yearly_energy_data['Year'].max(),
-            y0=limit,
-            y1=limit,
-            yref='y',
-            xref='x',
-            #line=dict(color='black', dash='dash')
-        )
-        annotations.append(dict(
-            x=yearly_energy_data['Year'].max(),
-            y=limit,
-            xref='x',
-            yref='y',
-            text=f'<span style="color:purple; font-weight:bold;">{building} LL97 Limit</span>',
-            # showarrow=True,
-            # arrowhead=1,
-            # arrowcolor='black',
-            # ax=0,
-            # ay=-20,
-            font=dict(size=12),
-            align='left',
-            xanchor='left',
-            yanchor='top',
-            # xshift=10,
-            # yshift=-5 - i * 20
+    colors = {'41 CS': 'brown', 'FB': 'red', 'RH': 'blue', 'Campus': 'purple'}
+
+    for building, limit in ll97_limits.items():
+        co2_emissions_plot.add_trace(go.Scatter(
+            x=[yearly_energy_data['Year'].min(), yearly_energy_data['Year'].max()],
+            y=[limit, limit],
+            mode='lines',
+            line=dict(color=colors[building], width=3),
+            name=f'{building} LL97 Limit (Yearly tCO2e: {limit})',
+            legendgroup=building,
+            text=[f'{building} LL97 Limit'] * 2,
+            hoverinfo='text'
         ))
 
-    co2_emissions_plot.update_layout(annotations=annotations)
+    co2_emissions_plot.update_layout(
+        # ... other layout settings ...
+        legend=dict(
+            x=0.5,  # Adjust the x position of the legend
+            y=-0.1,  # Adjust the y position of the legend to place it below the graph
+            xanchor='center',  # Anchor the legend at the center horizontally
+            yanchor='top',  # Anchor the legend at the top vertically
+            bgcolor='rgba(255, 255, 255, 0.5)'  # Set the background color of the legend
+        )
+    )
 
     return pie_chart, yearly_energy_plot, co2_emissions_plot
 
