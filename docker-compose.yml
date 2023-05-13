@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  cudash:
+    build: .
+    restart: unless-stopped
+    environment:
+      ENV_PROD: "production"
+    ports:
+      - 0.0.0.0:8050:8050
+
