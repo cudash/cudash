@@ -4,3 +4,6 @@ pandas==2.0.0
 plotly==5.14.1
 gunicorn
 dash-tools
+scikit-learn
+openpyxl
+

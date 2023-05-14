@@ -21,6 +21,7 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import pathlib
+import os
 
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -1031,6 +1032,8 @@ def update_output_5(contents, filename, start_date, end_date):
     return pie_chart, yearly_energy_plot, co2_emissions_plot
 
 if __name__ == '__main__':
-    app.run_server(debug=True, use_reloader=False)
-
+    if "ENV_PROD" in os.environ:
+        app.run_server(debug=False, use_reloader=False, host='0.0.0.0')
+    else:
+        app.run_server(debug=True, use_reloader=False)
 
