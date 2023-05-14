@@ -53,39 +53,38 @@ Run `src/app.py` and navigate to http://127.0.0.1:8050/ in your browser.
     
 DashTools and Render work together since Dashtools seamlessly creates the all the required files for deployment. Here is the Render dashboard snippet where you can choose which commited version of the app to deploy: ![image](https://github.com/cudash/cudash/assets/130943510/0494b624-ee97-42fc-8272-b04b8cf090ce)
 and here is the snippet of the generated files that DashTools generates ![image](https://github.com/cudash/cudash/assets/130943510/47d79c83-3aff-483e-8e15-6bd677dd3434)
-    
-    Ultimately, the free plan in Render was not enough for the task so Gary Kim is hosting on his server and has included the required Docker files to launch the app to this github. 
+Ultimately, the free plan in Render was not enough for the task so Gary Kim is hosting on his server and has included the required Docker files to launch the app to this github. 
 
 ### Public repository
 These are steps that were used to push changes into the public repo:
-1.
+
    ```sh
    git init
    ```
- 2.    ```sh
+   ```sh
    git add
    ```
-    3.
-       ```sh
+   ```sh
    git commit m "a message"
    ```
-    4.
-       ```sh
+   ```sh
    git push
    ```
     
 ### Cloning this Github Repository
     Please refer to the below docs if you want to clone the github to the document: 
     https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- USAGE EXAMPLES -->
 ## Usage
+Requires dashboard updates to keep running optimally:
+  * Each year add data for each BMS point located in the data file from Dec 7 from the prior year to current and update data file
+  * Each year update the carbon coefficients and 
+Chiller Plant Efficency
 ![image](https://github.com/cudash/cudash/assets/130943510/26af3ed0-71df-41a3-8590-ea47a2064828)
-
+Air Handler Systems
+  
+Cooling Tower Model 
 _For more examples, please refer to the link: https://cudash.garykim.dev/_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- CONTRIBUTING -->
@@ -97,8 +96,6 @@ _For more examples, please refer to the link: https://cudash.garykim.dev/_
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- CONTACT -->
 ## Contact
 
@@ -109,9 +106,6 @@ Project Link:
     Please Note: If there is an upgrade in the Render plan used, could be a viable solution
   Docker: https://cudash.garykim.dev/ (Docker requirements have been added into the repo)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments for Github
@@ -119,6 +113,5 @@ Project Link:
 * DashTools
 * Gary Kim
 * Eric Leong 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+*https://github.com/othneildrew/Best-README-Template/ for guidance on ReadME
 
