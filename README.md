@@ -101,12 +101,14 @@ _For more examples, please refer to the link: https://cudash.garykim.dev/_
 <!-- CONTACT -->
 ## Contact
 
-Your Name - cuenergydashboard23@gmail.com
+CUDASH - cuenergydashboard23@gmail.com
 
 Project Link:
-  Render (currently not in use): https://cudash.onrender.com 
+  
+    Render (currently not in use): https://cudash.onrender.com 
     Please Note: If there is an upgrade in the Render plan used, could be a viable solution
-  Docker: https://cudash.garykim.dev/ (Docker requirements have been added into the repo)
+  
+    Docker: https://cudash.garykim.dev/ (Docker requirements have been added into the repo)
 
 
 <!-- ACKNOWLEDGMENTS -->
