@@ -82,8 +82,10 @@ Requires dashboard updates to keep running optimally:
 Chiller Plant Efficency
 ![image](https://github.com/cudash/cudash/assets/130943510/26af3ed0-71df-41a3-8590-ea47a2064828)
 Air Handler Systems
-  
+![image](https://github.com/cudash/cudash/assets/130943510/1b5f8045-ae92-4042-abcb-968666dbc866)
 Cooling Tower Model 
+![image](https://github.com/cudash/cudash/assets/130943510/7af27e6c-5dec-4eec-ba81-b29022b19103)
+
 _For more examples, please refer to the link: https://cudash.garykim.dev/_
 
 
