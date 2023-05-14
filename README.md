@@ -15,7 +15,6 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
@@ -37,13 +36,13 @@
 
 
 
-### Built With Python, DashApp, Render, Docker, and DashTools
+## Built With Python, DashApp, Render, Docker, and DashTools
      
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-App Frame work and Deployment: Create DashApp framework through using DashTools: 
+Create DashApp framework through using DashTools: 
 When utilizing DashTools, it will create an app template with a default README.md file that has the below information on how to deploy the app locally on your machine: 
     
 Welcome to your [Plotly Dash](https://plotly.com/dash/) App! This is a template for your myapp app.
